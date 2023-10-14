@@ -1,6 +1,7 @@
 from models import (Base, session, Book, engine)
 import datetime
 import csv
+import time
 
 
 # main menu - add, search, analysis, exit, view
@@ -38,17 +39,38 @@ def cleanData(dateStr):
             'October', 'November', 'December']
     #splitting the month, day, and year in a 3 split
     splitDate = dateStr.split(' ')
+    try:
     #adding 1 to the index so January can start at 1 and not 0
-    month = int(months.index(splitDate[0])+1)
+        month = int(months.index(splitDate[0])+1)
     #splitting index 1(ex. 25, in October 25, 2017) and taking out the , after 25 which takes the first index[0] shown at the end.
-    day = int(splitDate[1].split(',')[0])
-    year = int(splitDate[2])
-    return datetime.date(year, month, day)
+        day = int(splitDate[1].split(',')[0])
+        year = int(splitDate[2])
+        dateReturn = datetime.date(year, month, day)
+    except ValueError:
+        input('''
+              \n*********DATE ERROR*********
+              \rThe date format should include a vaide Month Date Year format
+              \rEX: January 1, 2023
+              \rPress enter to try again.
+              \r*****************************''')
+        return None
 
+    else:
+        return dateReturn
 def cleanPrice(priceStr):
-    priceFloat = float(priceStr)
+    try:
+        priceFloat = float(priceStr)
+    except ValueError:
+        input('''
+              \n*********PRICE ERROR*********
+              \rThe price format should be a number without a $ symbol
+              \rEX: 29.99
+              \rPress enter to try again.
+              \r******************************''')
+        return None
     #removing the decimal ex. 29.99 to 2999
-    return(int(priceFloat * 100))
+    else:
+        return(int(priceFloat * 100))
     
 # loop runs program
 
@@ -76,8 +98,26 @@ def app():
     while runningApp:
          choice = menu()
          if choice == '1':
-            #add book
-            pass
+            title = input('Title: ')
+            author = input('Author: ')
+            dateError = True
+            while dateError:
+                date = input('Published Date (In format October 25, 2020): ')
+                date = cleanData(date)
+                if type(date) == datetime.date:
+                    dateError = False
+            priceError = True
+            while priceError:
+                price = input('Price of book: (In format XX.xx)')
+                price = cleanPrice(price)
+                if type(price) == int:
+                    priceError = False
+            newBook = Book(title = title, author = author, published_date = date, price = price)
+            session.add(newBook)
+            session.commit()
+            print(f'**{newBook.title}** was added!')
+            #Will pause for 1.5 seconds before continuing on
+            time.sleep(1.5)
          elif choice == '2':
              pass
          elif choice == '3':
@@ -100,9 +140,9 @@ if __name__ == '__main__':
     # Don't need to run menu anymore, just run app()
     #app()
     #addCSV()
-    cleanPrice('29.99')
-
     addCSV()
+    app()
 
-    for book in session.query(Book):
+    for book in session.query(Book.title, Book.author, Book.published_date, Book.price):
         print(book)
+
