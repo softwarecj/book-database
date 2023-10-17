@@ -72,6 +72,25 @@ def cleanPrice(priceStr):
     else:
         return(int(priceFloat * 100))
     
+def idClean(idStr, options):
+    try:
+        bookId = int(idStr)
+    except ValueError:
+        input('''
+              \n*********ID ERROR*********
+              \rThe id format should be a number.
+              \rPress enter to try again.
+              \r******************************''')
+        return None
+    else:
+        if bookId in options:
+            return bookId
+        else:
+            input(f'''
+              \n*********ID ERROR*********
+              \rThe id format should be a number between {options}
+              \rPress enter to try again.
+              \r******************************''')
 # loop runs program
 
 def addCSV():
@@ -112,7 +131,7 @@ def app():
                 price = cleanPrice(price)
                 if type(price) == int:
                     priceError = False
-            newBook = Book(title = title, author = author, published_date = date, price = price)
+            newBook = Book(title = title, author = author, published_date = date, price =price)
             session.add(newBook)
             session.commit()
             print(f'**{newBook.title}** was added!')
@@ -121,12 +140,27 @@ def app():
          elif choice == '2':
             print('\n***************AVAILABLE BOOKS*******************')
             for book in session.query(Book):
-                 print(f'${float(book.price)/100} |{book.title} by {book.author}')
+                 print(f'${(book.price)/100} id:{book.id}| {book.title} by {book.author}')
             input('Press enter to return to the main menu. ')
          elif choice == '3':
-             pass
+            id_options = []
+            for book in session.query(Book):
+                (id_options.append(book.id))
+            idError = True
+            while idError:
+                idChoice = input(f'''
+                    \nID option: {id_options}
+                    \rBook id: ''')
+                idChoice = idClean(idChoice, id_options)
+                if type(idChoice) == int:
+                    idError = False
+            bookFound = session.query(Book).filter(Book.id == idChoice).first()
+            print(f'''
+                \n***BOOK FOUND***
+                \r${bookFound.price/100} | id:{bookFound.id}| {bookFound.title} by {bookFound.author}''')
+            input('Press enter to return to the main menu. ')
          elif choice == '4':
-             pass
+                pass
          else:
              print('Good Bye!')
              runningApp = False
