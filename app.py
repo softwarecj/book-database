@@ -119,7 +119,10 @@ def app():
             #Will pause for 1.5 seconds before continuing on
             time.sleep(1.5)
          elif choice == '2':
-             pass
+            print('\n***************AVAILABLE BOOKS*******************')
+            for book in session.query(Book):
+                 print(f'${float(book.price)/100} |{book.title} by {book.author}')
+            input('Press enter to return to the main menu. ')
          elif choice == '3':
              pass
          elif choice == '4':
