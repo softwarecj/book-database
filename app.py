@@ -1,5 +1,6 @@
 from models import (Base, session, Book, engine)
 import datetime
+import time
 import csv
 import time
 
@@ -26,12 +27,25 @@ def menu():
               A number from 1=5.
               Press enter to try again
               ''')
+            
+def subMenu():
+    while True:
+        print('''
+        \n
+        \r1) Edit
+        \r2) Delete
+        \r3) Return to main menu''')
+
+        choice = input('What would you like to do? ')
+        if choice in ['1', '2', '3']:
+            return choice
     
-# add books to the database
-# edit
-# delete
-# search
-# data cleaning
+        else: 
+            input('''
+              Please choose one of the options above.
+              A number from 1=3.
+              Press enter''')
+    
 def cleanData(dateStr):
     #can also use strptime()
     months = ['January', 'February', 'March', 'April',
@@ -92,6 +106,29 @@ def idClean(idStr, options):
               \rPress enter to try again.
               \r******************************''')
 # loop runs program
+def editCheck(columnName, currentValue):
+    print(f'**** EDIT {columnName} ****')
+    if columnName == 'Price':
+        print(f'Current Value: {currentValue/100}')
+    elif columnName == 'Date':
+        print(f'Current Value: {currentValue.strftime("%B %d, %Y")}')
+    else: 
+        print(f'Current Value: {currentValue}')
+
+    if columnName == 'Date' or columnName == 'Price':
+        while True:
+            changes = input('What would you like to change the value to? ')
+            if columnName == 'Date':
+                changes = cleanData(changes)
+                if type(changes) == datetime.date:
+                    return changes
+                 #return automatically stops a loop
+            elif columnName == 'Price':
+                changes = cleanPrice(changes)
+                if type(changes) == int:
+                    return changes
+    else:
+        return input('What would you like to change the value to? ')
 
 def addCSV():
     with open('suggested_books.csv') as csvfile:
@@ -158,7 +195,22 @@ def app():
             print(f'''
                 \n***BOOK FOUND***
                 \r${bookFound.price/100} | id:{bookFound.id}| {bookFound.title} by {bookFound.author}''')
-            input('Press enter to return to the main menu. ')
+            subChoice = subMenu()
+            if subChoice == '1':
+            #editing a book
+                bookFound.title = editCheck('Title', bookFound.title)
+                bookFound.author = editCheck('Author', bookFound.author)
+                bookFound.published_date = editCheck('Date', bookFound.published_date)
+                bookFound.price = editCheck('Price', bookFound.price)
+                session.commit()
+                print('Book updated!')  
+                time.sleep(1.5)              
+                                                     
+            elif subChoice == '2':
+                #delete book
+                session.delete(bookFound)
+                print('Book deleted')
+                time.sleep(1.5)
          elif choice == '4':
                 pass
          else:
