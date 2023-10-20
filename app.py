@@ -212,7 +212,23 @@ def app():
                 print('Book deleted')
                 time.sleep(1.5)
          elif choice == '4':
-                pass
+                    #analysis
+            oldestBook = (session.query(Book).order_by(Book.published_date.desc()).first()).title
+            newestBook = (session.query(Book).order_by(Book.published_date).first()).title
+            pythonBook = session.query(Book).filter(Book.title.like("%Python%")).count()
+            countBook = session.query(Book).count()
+            priceBook = session.query(Book).filter(Book.price <= 200).first().title
+            mpriceBook = session.query(Book).filter(Book.price >= 4300).first().title
+            analysis = (oldestBook, newestBook, pythonBook, countBook, priceBook, mpriceBook)
+            print(f'''\n****Book Analysis**** 
+                              \rOldest Book: {analysis[0]}
+                              \rNewest Book: {analysis[1]}
+                              \rTotal Python Books: {analysis[2]}
+                              \rTotal Books: {analysis[3]}
+                              \rCheapest book: {analysis[4]}
+                              \rMost expensive book: {analysis[5]}
+                              ''')
+            input('Press enter to return to the main menu')
          else:
              print('Good Bye!')
              runningApp = False
@@ -232,6 +248,4 @@ if __name__ == '__main__':
     addCSV()
     app()
 
-    for book in session.query(Book.title, Book.author, Book.published_date, Book.price):
-        print(book)
 
